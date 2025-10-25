@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Femur Sex Estimator — Mobile</title>
+  <meta name="description" content="Femur osteometric sex estimator" />
+  <style>
+    :root{
+      --bg: #0a1f3d; /* deep blue background */
+      --panel: #112b4f; /* slightly lighter panel */
+      --accent: #ff9a4d; /* orange accent */
+      --highlight: #4fc3f7; /* cyan/blue highlight for icons etc */
+      --muted: #b0c4de; /* light muted text */
+      --glass: rgba(255,255,255,0.05);
+      --radius:14px;
+      --gap:18px;
+      --icon-color: var(--highlight);
+      font-family: Inter, system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#0f2640);color:var(--muted)}
+    .app{max-width:900px;margin:0 auto;min-height:100vh;padding:20px}
+
+    /* Top bar */
+    .topbar{display:flex;align-items:center;gap:12px;padding:12px 4px}
+    .logo{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#d9771d);display:flex;align-items:center;justify-content:center;font-weight:700;color:#0a1f3d}
+    .title{font-size:18px;color:var(--accent);font-weight:700}
+    .subtitle{font-size:12px;color:var(--muted)}
+
+    /* Home grid */
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--gap);margin-top:18px}
+    .tile{background:var(--panel);border-radius:16px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 18px rgba(0,0,0,0.6);cursor:pointer;border:1px solid rgba(255,255,255,0.03)}
+    .tile h3{margin:0;color:var(--accent);font-size:16px}
+    .tile p{margin:0;font-size:13px;color:var(--muted);text-align:center}
+
+    /* Card */
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:var(--radius);padding:18px;margin-top:18px;border:1px solid rgba(255,255,255,0.03)}
+    .row{display:flex;gap:12px;align-items:center}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input[type=number], input[type=text], select{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted);font-size:16px}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+    .btn{background:var(--accent);color:#0a1f3d;padding:12px 16px;border-radius:12px;border:none;font-weight:700;cursor:pointer}
+    .btn.secondary{background:transparent;color:var(--muted);border:1px solid rgba(255,154,77,0.3)}
+
+    .images{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+    .images img{width:120px;height:auto;border-radius:10px;border:1px solid rgba(255,255,255,0.04)}
+
+    h2.section-title{color:var(--accent);margin:8px 0 12px}
+    table.results{width:100%;border-collapse:collapse;margin-top:12px}
+    table.results td{padding:10px;border-top:1px solid rgba(255,255,255,0.02);font-weight:600;color:var(--muted)}
+    .result-value{color:#fff;font-weight:800}
+
+    /* responsive */
+    @media (max-width:600px){.grid{grid-template-columns:1fr}.images img{width:100px}.logo{width:46px;height:46px}}
+
+    /* small helper */
+    .foot{font-size:12px;color:#8f8f8f;margin-top:18px;text-align:center}
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <div class="topbar">
+      <div class="logo">FE</div>
+      <div>
+        <div class="title">Femur Sex Estimator</div>
+        <div class="subtitle">Osteometric sex estimation — mobile friendly</div>
+      </div>
+    </div>
+
+    <!-- Home (tiles) -->
+    <div id="homeView">
+      <div class="grid">
+        <div class="tile" data-target="whole">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="4" fill="white" opacity="0.06"/><path d="M8 7h8M8 12h8M8 17h8" stroke="#111" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3>Whole Femur</h3>
+          <p>Use EB, APMSD, BTL, MxSD — discriminant & logistic outputs</p>
+        </div>
+
+        <div class="tile" data-target="proximal">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="4" fill="white" opacity="0.06"/><path d="M12 7v10M8 11h8" stroke="#111" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3>Proximal End</h3>
+          <p>THD & BTL measurements (trochanter to trochanter)</p>
+        </div>
+
+        <div class="tile" data-target="mid">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="4" fill="white" opacity="0.06"/><path d="M7 12h10" stroke="#111" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3>Mid-Shaft</h3>
+          <p>APMSD only — fast check using diaphyseal diameter</p>
+        </div>
+
+        <div class="tile" data-target="distal">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="4" fill="white" opacity="0.06"/><path d="M8 8l8 8M16 8l-8 8" stroke="#111" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3>Distal End</h3>
+          <p>EB & MLLC — distal condyle based estimation</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Quick actions</h2>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn" id="btnSave">Save last result</button>
+          <button class="btn secondary" id="btnClear">Clear saved</button>
+          <button class="btn secondary" id="btnAbout">About & Help</button>
+        </div>
+      </div>
+
+      <div class="foot">@Vidu - Tap a tile to start</div>
+    </div>
+
+    <!-- Generic section view (populated dynamically) -->
+    <div id="sectionView" style="display:none"></div>
+
+  </div>
+
+<script>
+// --- Data & formulas (from original) ---
+const formulas = {
+  whole: {
+    std: {
+      EB: {mean:7.537962, sd:0.4493},
+      APMSD: {mean:2.797642, sd:0.258698},
+      BTL: {mean:7.139872, sd:0.802448},
+      MxSD: {mean:2.884514, sd:0.243353}
+    },
+    discriminant: (s)=> (0.7363*s.EB)+(0.8647*s.APMSD)+(0.4*s.BTL)-(0.3890*s.MxSD),
+    discCut: -0.2290,
+    logit: (s)=> 0.9109 + (1.7220*s.EB) + (2.2357*s.APMSD) - (0.9453*s.MxSD)
+  },
+  proximal: {
+    std: {
+      BTL: {mean:7.139872, sd:0.802448},
+      THD: {mean:4.220769, sd:0.28736}
+    },
+    discriminant: (s)=> (0.4069*s.THD)+(0.9421*s.BTL),
+    discCut: -0.1503,
+    logit: (s)=> 0.4739 + (2.2241*s.BTL)
+  },
+  mid: {
+    std: {APMSD:{mean:2.797642, sd:0.258698}},
+    discriminant: (s)=> 1.2379*s.APMSD,
+    discCut: -0.1740,
+    logit: (s)=> 0.6902 + (2.0570*s.APMSD)
+  },
+  distal: {
+    std: {EB:{mean:7.537962, sd:0.4493}, MLLC:{mean:5.897821, sd:0.383368}},
+    discriminant: (s)=> (0.7657*s.EB)+(0.5265*s.MLLC),
+    discCut: -0.1631,
+    logit: (s)=> 0.7181 + (1.0285*s.EB) + (0.8437*s.MLLC)
+  }
+};
+
+// --- Helpers ---
+function stdize(val, mean, sd){ return (val - mean) / sd }
+function sigmoidFromExp(e){ return 1/(Math.exp(-e)+1) }
+
+// --- Routing & UI ---
+const app = document.getElementById('app');
+const homeView = document.getElementById('homeView');
+const sectionView = document.getElementById('sectionView');
+
+function makeSectionHtml(key){
+  const imgs = {
+    whole:['1.jpg','2.jpg','3.jpg','4.png'],
+    proximal:['3.jpg'],
+    mid:['2.jpg'],
+    distal:['4.png']
+  };
+  const fields = {
+    whole:[['EB','number'],['APMSD','number'],['BTL','number'],['MxSD','number']],
+    proximal:[['THD','number'],['BTL','number']],
+    mid:[['APMSD','number']],
+    distal:[['EB','number'],['MLLC','number']]
+  };
+  const titleMap = {whole:'Whole Femur', proximal:'Proximal End', mid:'Mid-Shaft', distal:'Distal End'};
+
+  let html = `
+    <div class="card">
+      <button class="btn secondary" id="backBtn">← Back</button>
+      <h2 class="section-title">${titleMap[key]}</h2>
+      <div class="images">`;
+  imgs[key].forEach(s=> html += `<img src="${s}" alt="image">`);
+  html += `</div>
+      <form id="calcForm" onsubmit="return false;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">`;
+  fields[key].forEach(([id,type])=>{
+    html+= `<div><label for="${id}">${id}</label><input inputmode="numeric" step="any" id="${id}" type="${type}" required></div>`;
+  });
+  html += `</div>
+        <div class="actions">
+          <button class="btn" id="runBtn">Calculate</button>
+          <button class="btn secondary" id="saveBtn">Save result</button>
+          <button class="btn secondary" id="clearBtn">Clear fields</button>
+        </div>
+      </form>
+
+      <table class="results">
+        <tr><td>Discriminant score</td><td class="result-value" id="discVal">—</td></tr>
+        <tr><td>Discriminant gender</td><td id="discGender">—</td></tr>
+        <tr><td>Logistic probability</td><td class="result-value" id="probVal">—</td></tr>
+        <tr><td>Logistic gender</td><td id="probGender">—</td></tr>
+      </table>
+    </div>`;
+  return html;
+}
+
+function openSection(key){
+  homeView.style.display='none';
+  sectionView.style.display='block';
+  sectionView.innerHTML = makeSectionHtml(key);
+  document.getElementById('backBtn').addEventListener('click', ()=>{sectionView.style.display='none';homeView.style.display='block';});
+  document.getElementById('runBtn').addEventListener('click', ()=> runCalc(key));
+  document.getElementById('saveBtn').addEventListener('click', ()=> saveResult(key));
+  document.getElementById('clearBtn').addEventListener('click', ()=> clearFields(key));
+}
+
+Array.from(document.querySelectorAll('.tile')).forEach(t=>{
+  t.addEventListener('click', ()=> openSection(t.dataset.target));
+});
+
+function readInputs(key){
+  const cfgFields = {whole:['EB','APMSD','BTL','MxSD'],proximal:['THD','BTL'],mid:['APMSD'],distal:['EB','MLLC']};
+  const raw = {};
+  for(const id of cfgFields[key]){
+    const el = document.getElementById(id);
+    if(!el) continue;
+    const v = parseFloat(el.value);
+    if(Number.isNaN(v)) return {error:`Enter a value for ${id}`};
+    raw[id]=v;
+  }
+  return {raw};
+}
+
+function runCalc(key){
+  const r = readInputs(key);
+  if(r.error){ alert(r.error); return; }
+  const raw = r.raw;
+  const s = {};
+  for(const k in raw){
+    const m = formulas[key].std[k].mean;
+    const sd = formulas[key].std[k].sd;
+    s[k] = stdize(raw[k], m, sd);
+  }
+  const disc = formulas[key].discriminant(s);
+  const discGender = (disc < formulas[key].discCut) ? 'Female' : 'Male';
+  const eOUT = formulas[key].logit(s);
+  const prob = 1/(Math.exp(-eOUT)+1);
+  const probGender = (prob>0.5)?'Male':'Female';
+
+  document.getElementById('discVal').textContent = disc.toFixed(3);
+  document.getElementById('discGender').textContent = discGender;
+  document.getElementById('probVal').textContent = prob.toFixed(3);
+  document.getElementById('probGender').textContent = probGender;
+
+  window._lastResult = {section:key, raw, disc:disc.toFixed(3), discGender, prob:prob.toFixed(3), probGender};
+}
+
+function saveResult(key){
+  if(!window._lastResult || window._lastResult.section !== key){ alert('Run calculation first'); return; }
+  const stored = JSON.parse(localStorage.getItem('femur_results')||'[]');
+  stored.unshift(window._lastResult);
+  localStorage.setItem('femur_results',JSON.stringify(stored.slice(0,20)));
+  alert('Saved result locally');
+}
+
+function clearFields(key){
+  const cfgFields = {whole:['EB','APMSD','BTL','MxSD'],proximal:['THD','BTL'],mid:['APMSD'],distal:['EB','MLLC']};
+  for(const id of cfgFields[key]){ const el = document.getElementById(id); if(el) el.value=''; }
+  document.getElementById('discVal').textContent='—';
+  document.getElementById('discGender').textContent='—';
+  document.getElementById('probVal').textContent='—';
+  document.getElementById('probGender').textContent='—';
+}
+
+document.getElementById('btnSave').addEventListener('click', ()=>{
+  if(window._lastResult){ const stored = JSON.parse(localStorage.getItem('femur_results')||'[]'); stored.unshift(window._lastResult); localStorage.setItem('femur_results',JSON.stringify(stored.slice(0,20))); alert('Saved last result'); } else alert('Run a calculation first');
+});
+
+document.getElementById('btnClear').addEventListener('click', ()=>{ localStorage.removeItem('femur_results'); alert('Cleared saved results'); });
+
+document.getElementById('btnAbout').addEventListener('click', ()=>{
+  alert('Femur Estimator — educational/research tool. Measurements in cm.\n\nDesigned for quick field estimation. Not a diagnostic medical device.');
+});
+
+window.addEventListener('load', ()=>{
+  const hash = location.hash.replace('#','');
+  if(['whole','proximal','mid','distal'].includes(hash)) openSection(hash);
+});
+</script>
+</body>
+</
